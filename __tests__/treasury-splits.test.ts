@@ -37,7 +37,7 @@ describe('Multi-Vendor Split, Liquidity & Webhook Outbox Suite', () => {
   it('allocates marketplace split payouts with remainder minor units to primary vendor', () => {
     const plan = splitter.computeSplitPlan({
       entryId: 'clr-demo-1',
-      tenantId: 'tenant-orion',
+      tenantId: 'mock_tenant_alpha',
       netDistributableMinor: 10001,
       currency: 'INR',
       rules: [
@@ -57,33 +57,33 @@ describe('Multi-Vendor Split, Liquidity & Webhook Outbox Suite', () => {
 
   it('computes liquidity exposure, aging buckets, and reserve deficit accurately', () => {
     ingestion.ingestEntry({
-      tenantId: 'tenant-orion',
+      tenantId: 'mock_tenant_alpha',
       rawIdempotencyKey: 'liq-key-1',
       rawBody: {
         externalOrderId: 'ORD-LIQ-1',
         sourceAmountMinor: 80000,
         sourceCurrency: 'INR',
-        customerEmail: 'corp@example.com',
+        customerEmail: 'user1@test.local',
       },
     });
 
-    const snap = liquidity.computeTenantLiquidity('tenant-orion');
+    const snap = liquidity.computeTenantLiquidity('mock_tenant_alpha');
     expect(snap.clearedSettleableMinor).toBeGreaterThan(0);
     expect(snap.agingBuckets[0].entryCount).toBe(1);
 
-    const release = liquidity.evaluateReserveRelease('tenant-orion');
+    const release = liquidity.evaluateReserveRelease('mock_tenant_alpha');
     expect(release.canReleaseNow).toBe(false);
   });
 
   it('masks PII fields in outbound webhook notifications', () => {
     const created = ingestion.ingestEntry({
-      tenantId: 'tenant-orion',
+      tenantId: 'mock_tenant_alpha',
       rawIdempotencyKey: 'wh-key-1',
       rawBody: {
         externalOrderId: 'ORD-WH-1',
         sourceAmountMinor: 40000,
         sourceCurrency: 'INR',
-        customerEmail: 'alice.sharma@example.com',
+        customerEmail: 'user1@test.local',
       },
     });
 
@@ -92,7 +92,7 @@ describe('Multi-Vendor Split, Liquidity & Webhook Outbox Suite', () => {
       'YOUR_API_KEY_HERE',
     );
     expect(env.signatureHeader.startsWith('sha256=')).toBe(true);
-    expect(env.body.customerEmailMasked).toBe('a***a@example.com');
+    expect(env.body.customerEmailMasked).toBe('u***1@test.local');
 
     if (fs.existsSync(tmpFile)) {
       fs.unlinkSync(tmpFile);

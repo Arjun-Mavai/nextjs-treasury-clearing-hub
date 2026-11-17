@@ -57,56 +57,56 @@ export const TIER_SCHEDULES: Record<MerchantTier, TierFeeSchedule> = {
 
 const SEED_TENANTS: TenantClearingProfile[] = [
   {
-    tenantId: 'tenant-orion',
-    legalName: 'Orion Global Exports Ltd',
+    tenantId: 'mock_tenant_alpha',
+    legalName: 'mock_user_alpha',
     status: 'ACTIVE',
     tier: 'GROWTH',
     settlementCurrency: 'INR',
     allowedSourceCurrencies: ['INR', 'USD', 'EUR'],
     reserveVaultBalanceMinor: 250_000,
     minimumReserveTargetMinor: 500_000,
-    payoutBankAccount: 'HDFC00044112233',
-    taxPanNumber: 'AABCO1234F',
-    complianceEmail: 'finance@orion-example.com',
+    payoutBankAccount: 'mock_acct_001',
+    taxPanNumber: 'mock_tax_pan_001',
+    complianceEmail: 'dummy@internal.mock',
   },
   {
-    tenantId: 'tenant-zenith',
-    legalName: 'Zenith Digital Studio',
+    tenantId: 'mock_tenant_beta',
+    legalName: 'mock_user_beta',
     status: 'ACTIVE',
     tier: 'STARTER',
     settlementCurrency: 'INR',
     allowedSourceCurrencies: ['INR', 'USD'],
     reserveVaultBalanceMinor: 50_000,
     minimumReserveTargetMinor: 200_000,
-    payoutBankAccount: 'ICIC00077889900',
-    taxPanNumber: 'AABCZ9876K',
-    complianceEmail: 'accounts@zenith-example.com',
+    payoutBankAccount: 'mock_acct_002',
+    taxPanNumber: 'mock_tax_pan_002',
+    complianceEmail: 'dummy@internal.mock',
   },
   {
-    tenantId: 'tenant-apex-eu',
-    legalName: 'Apex Logistics GmbH',
+    tenantId: 'mock_tenant_gamma',
+    legalName: 'mock_user_gamma',
     status: 'ACTIVE',
     tier: 'ENTERPRISE',
     settlementCurrency: 'EUR',
     allowedSourceCurrencies: ['EUR', 'USD', 'GBP'],
     reserveVaultBalanceMinor: 1_000_000,
     minimumReserveTargetMinor: 1_000_000,
-    payoutBankAccount: 'DE89370400440532013000',
-    taxPanNumber: 'DE123456789',
-    complianceEmail: 'treasury@apex-example.com',
+    payoutBankAccount: 'fake_iban_9999',
+    taxPanNumber: 'mock_tax_pan_003',
+    complianceEmail: 'dummy@internal.mock',
   },
   {
-    tenantId: 'tenant-frozen',
-    legalName: 'Frozen Retail Corp',
+    tenantId: 'mock_tenant_delta',
+    legalName: 'mock_user_delta',
     status: 'SUSPENDED',
     tier: 'STARTER',
     settlementCurrency: 'INR',
     allowedSourceCurrencies: ['INR'],
     reserveVaultBalanceMinor: 10_000,
     minimumReserveTargetMinor: 100_000,
-    payoutBankAccount: 'SBIN00011223344',
-    taxPanNumber: 'AABCF5555M',
-    complianceEmail: 'legal@frozen-example.com',
+    payoutBankAccount: 'mock_acct_003',
+    taxPanNumber: 'mock_tax_pan_004',
+    complianceEmail: 'dummy@internal.mock',
   },
 ];
 
@@ -153,7 +153,7 @@ export class TenantPolicyRegistry {
 
   /**
    * BUG: Only trims whitespace without lowercasing on lookup, causing uppercase
-   * tenant IDs like "TENANT-ORION" to fail with undefined.
+   * tenant IDs like "MOCK_TENANT_ALPHA" to fail with undefined.
    */
   public getTenant(tenantId: string): TenantClearingProfile | undefined {
     return this.profiles.get(tenantId.trim());

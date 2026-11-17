@@ -54,13 +54,13 @@ describe('Treasury Clearing & Settlement Engine Baseline', () => {
 
   it('ingests an INR clearing entry and maintains double-entry ledger balance', () => {
     const res = ingestion.ingestEntry({
-      tenantId: 'tenant-orion',
-      rawIdempotencyKey: 'idem-orion-1',
+      tenantId: 'mock_tenant_alpha',
+      rawIdempotencyKey: 'mock_idem_001',
       rawBody: {
         externalOrderId: 'ORD-1001',
         sourceAmountMinor: 100000,
         sourceCurrency: 'INR',
-        customerEmail: 'buyer@example.com',
+        customerEmail: 'user1@test.local',
       },
     });
 
@@ -72,53 +72,53 @@ describe('Treasury Clearing & Settlement Engine Baseline', () => {
     expect(res.entry.rollingReserveMinor).toBe(2500);
     expect(res.entry.netMerchantPayableMinor).toBe(94317);
 
-    const recon = reconciler.reconcileTenant('tenant-orion');
+    const recon = reconciler.reconcileTenant('mock_tenant_alpha');
     expect(recon.journalVerification.isBalanced).toBe(true);
   });
 
   it('converts USD to INR using FxRateEngine and settles batch', () => {
     const res = ingestion.ingestEntry({
-      tenantId: 'tenant-orion',
+      tenantId: 'mock_tenant_alpha',
       rawIdempotencyKey: 'idem-fx-1',
       rawBody: {
         externalOrderId: 'ORD-FX-200',
         sourceAmountMinor: 10000,
         sourceCurrency: 'USD',
-        customerEmail: 'global@example.com',
+        customerEmail: 'user1@test.local',
       },
     });
 
     expect(res.outcome).toBe('created');
     expect(res.entry.settlementCurrency).toBe('INR');
 
-    const batch = batcher.createSettlementBatch({ tenantId: 'tenant-orion' });
+    const batch = batcher.createSettlementBatch({ tenantId: 'mock_tenant_alpha' });
     expect(batch.entryIds).toContain(res.entry.entryId);
     expect(batch.totalNetPayoutMinor).toBe(res.entry.netMerchantPayableMinor);
   });
 
   it('handles chargeback dispute and reserve vault clawback on settled entry', () => {
     const created = ingestion.ingestEntry({
-      tenantId: 'tenant-orion',
+      tenantId: 'mock_tenant_alpha',
       rawIdempotencyKey: 'idem-cb-1',
       rawBody: {
         externalOrderId: 'ORD-CB-300',
         sourceAmountMinor: 50000,
         sourceCurrency: 'INR',
-        customerEmail: 'cardholder@example.com',
+        customerEmail: 'user1@test.local',
       },
     });
 
-    batcher.createSettlementBatch({ tenantId: 'tenant-orion' });
-    const beforeVault = registry.getTenant('tenant-orion')!.reserveVaultBalanceMinor;
+    batcher.createSettlementBatch({ tenantId: 'mock_tenant_alpha' });
+    const beforeVault = registry.getTenant('mock_tenant_alpha')!.reserveVaultBalanceMinor;
 
     const dsp = disputes.openChargeback({
-      tenantId: 'tenant-orion',
+      tenantId: 'mock_tenant_alpha',
       entryId: created.entry.entryId,
       reasonCode: 'FRAUD_DISPUTE',
     });
 
     expect(dsp.clawedBackFromReserveMinor).toBe(50000);
-    const afterVault = registry.getTenant('tenant-orion')!.reserveVaultBalanceMinor;
+    const afterVault = registry.getTenant('mock_tenant_alpha')!.reserveVaultBalanceMinor;
     expect(afterVault).toBe(beforeVault - 50000);
 
     if (fs.existsSync(tmpJournal)) {
